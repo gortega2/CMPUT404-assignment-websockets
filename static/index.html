@@ -22,7 +22,8 @@
     "/>
     <script src="json2.js"></script>
   </head> 
-  <body bgcolor="white" height="100%" width="100%"> 
+  <body bgcolor="white" height="100%" width="100%" style="background-image: url('static/background.png');
+  background-size: 100% 100%; background-repeat: no-repeat; background-attachment: fixed;"> 
     <div id="debug"></div>
     <canvas id="c" width="100%" height="100%" style="-webkit-tap-highlight-color: transparent;"></canvas> 
 
@@ -33,6 +34,7 @@ var host = window.location.host;
 var context = canvas.getContext("2d");
 var W = canvas.width  = window.innerWidth-6;
 var H = canvas.height = window.innerHeight-50;
+canvas.style.backgroundColor = "transparent";
 var wscounter = 0;
 var socket;
 //var id = "L"+Math.floor(20000000*Math.random()); //choose random listener id
@@ -41,7 +43,7 @@ function debug(str) {
     var debugDiv = document.getElementById('debug');
     debugDiv.innerHTML = "" + str;
 }
-debug("Test");
+//debug("Test");
 
 world = {};
 
@@ -72,9 +74,10 @@ function prepEntity(entity) {
 
 function clearFrame() {
     with(context) {
-	moveTo(0,0);
-	fillStyle = "#000";
-	fillRect(0,0,W,H);
+        context.clearRect(0,0, canvas.width, canvas.height)
+	//moveTo(0,0);
+	//fillStyle = "#000";
+	//fillRect(0,0,W,H);
     }
 
 }
@@ -126,10 +129,10 @@ function addEntity(entity, data) {
     var name = entity;
 
     world[name] = data;
-    console.log(name);
+    //console.log(name);
     send_data(name, data);
-    console.log(name);
-    drawNextFrame(); // (but should we?)
+    //console.log(name);
+    //drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
 }
 var counter = 0;
@@ -246,22 +249,22 @@ mouse = (function() {
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
 mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'blue', 'radius':4});
 });
 
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'purple', 'radius':4});
 });
 
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+    addEntityWithoutName({'x':x,'y':y,'colour':'black',
+                          'radius':2});
 });
 
 function send_data(entity, data){
     var dict = {};
     dict[entity] = data;
-    console.log(JSON.stringify(dict));
+    //console.log(JSON.stringify(dict));
     socket.send(JSON.stringify({"entity":dict}));
 }
 
@@ -276,7 +279,7 @@ function wsSetup() {
     socket = new WebSocket(url);
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
-        console.log("Is this working?")
+        //console.log("Is this working?")
         socket.send(JSON.stringify({"world":"GET"}))
 
     };
@@ -285,11 +288,11 @@ function wsSetup() {
     };
     socket.onmessage = function(msg) {  
         try {
-            debug("WebSocket Recv:" + msg.data);
+            //debug("WebSocket Recv:" + msg.data);
             //XXX: TODO What are you going to do here?
             var msg = JSON.parse(msg.data); 1
             updateWorldWith(msg);
-            console.log(msg);           
+            //console.log(msg);           
         } catch (e) {
             alert("socket on message: " + e);
         }

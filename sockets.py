@@ -28,10 +28,15 @@ app.debug = True
 
 clients = list()
 
-def send_all(msg, client):
+def send_not_all(msg, client):
     for cl in clients:
         if cl != client:
-            cl.put( msg )
+            cl.put(msg)
+
+def send_all(msg, client):
+    for cl in clients:
+        #if cl != client:
+        cl.put( msg )
 
 def send_all_json(obj, client):
     send_all( json.dumps(obj), client )
@@ -99,22 +104,24 @@ def read_ws(ws,client):
     try:
         while True:
             msg = ws.receive()
-            print(client)
+            #print(client)
             #print("WS RECV:  {}".format()
             if (msg is not None):
                 packet = json.loads(msg)
                 if packet.get('entity', dict()):
-                    print("PRINTING ENTITY: ", packet.get('entity'))
+                    #print("PRINTING ENTITY: ", packet.get('entity'))
                     for key, value in packet.get('entity').items():
                         pack_json = {key:value}
-                        print(pack_json)
+                        #print(pack_json)
                         myWorld.set(key, value)
-                        send_all_json(pack_json, client)
+                        send_not_all(json.dumps(pack_json), client)
                        
                 elif packet.get('world', dict()):
                     ws.send(json.dumps((myWorld.world())))
+                
+                else:
                 #print("WS RECV: {}".format(packet))
-                #send_all_json(packet, client)
+                    send_all_json(packet, client)
             else:
                 break
     except Exception as e:
