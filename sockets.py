@@ -26,6 +26,10 @@ app = Flask(__name__)
 sockets = Sockets(app)
 app.debug = True
 
+
+# Reference: Websocket chat example provided from cmput404 github slides
+# Link: https://github.com/uofa-cmput404/cmput404-slides/tree/master/examples/WebSocketsExamples
+# Author: Abram Hindle
 clients = list()
 
 def send_not_all(msg, client):
@@ -89,6 +93,8 @@ myWorld = World()
 def set_listener( entity, data ):
     #myWorld.add_set_listener({entity:data})
     return
+    # Didn't end up using provided listeners, so I'm curious what
+    # an implementation with the listeners would look like
     ''' do something with the update ! '''
 
 myWorld.add_set_listener( set_listener )
