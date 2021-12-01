@@ -28,12 +28,13 @@ app.debug = True
 
 clients = list()
 
-def send_all(msg):
-    for client in clients:
-        client.put( msg )
+def send_all(msg, client):
+    for cl in clients:
+        if cl != client:
+            cl.put( msg )
 
-def send_all_json(obj):
-    send_all( json.dumps(obj) )
+def send_all_json(obj, client):
+    send_all( json.dumps(obj), client )
 
 class Client:
     def __init__(self):
@@ -81,7 +82,7 @@ class World:
 myWorld = World()        
 
 def set_listener( entity, data ):
-    myWorld.add_set_listener({entity:data})
+    #myWorld.add_set_listener({entity:data})
     return
     ''' do something with the update ! '''
 
@@ -98,11 +99,22 @@ def read_ws(ws,client):
     try:
         while True:
             msg = ws.receive()
+            print(client)
             #print("WS RECV:  {}".format()
             if (msg is not None):
                 packet = json.loads(msg)
-                print("WS RECV: {}".format(packet))
-                send_all_json(packet)
+                if packet.get('entity', dict()):
+                    print("PRINTING ENTITY: ", packet.get('entity'))
+                    for key, value in packet.get('entity').items():
+                        pack_json = {key:value}
+                        print(pack_json)
+                        myWorld.set(key, value)
+                        send_all_json(pack_json, client)
+                       
+                elif packet.get('world', dict()):
+                    ws.send(json.dumps((myWorld.world())))
+                #print("WS RECV: {}".format(packet))
+                #send_all_json(packet, client)
             else:
                 break
     except Exception as e:
@@ -120,7 +132,8 @@ def subscribe_socket(ws):
     client = Client()
     clients.append(client)
     g = gevent.spawn(read_ws, ws, client)
-    print('has this run yet?')
+    print(g)
+    #print('has this run yet?')
     try:
         while True:
             msg = client.get()
@@ -143,6 +156,7 @@ def flask_post_json():
         return json.loads(request.data.decode("utf8"))
     else:
         return json.loads(request.form.keys()[0])
+
 
 @app.route("/entity/<entity>", methods=['POST','PUT'])
 def update(entity):
